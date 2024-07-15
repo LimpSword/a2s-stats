@@ -7,14 +7,6 @@ import requests
 
 from internal import a2s_calls
 
-servers_file_type = get_settings().servers_file_type
-servers_file_url = get_settings().servers_file_url
-
-cached_servers: dict = {}
-cached_serverinfo: dict = {}
-
-logger = logging.getLogger("uvicorn.error")
-
 
 class ServerInfo:
     def __init__(self, name, ip, map, players, max_players, tags, timestamp):
@@ -28,6 +20,14 @@ class ServerInfo:
 
     def __str__(self):
         return f"{self.name} ({self.ip}) - {self.players}/{self.max_players} players on {self.map} ({self.tags})"
+
+
+servers_file_type = get_settings().servers_file_type
+servers_file_url = get_settings().servers_file_url
+
+cached_servers: dict = {}
+
+logger = logging.getLogger("uvicorn.error")
 
 
 def _load_servers():
@@ -74,11 +74,8 @@ def get_servers():
     return cached_servers
 
 
-def get_all_server_info():
-    return cached_serverinfo
-
-
-async def refresh_servers():
+async def get_all_server_info() -> dict[str, ServerInfo]:
+    serverinfo: dict[str, ServerInfo] = {}
     servers = get_servers()
     for server in servers:
         server = servers[server]
@@ -88,7 +85,5 @@ async def refresh_servers():
         players, max_players, map = await a2s_calls.get_info(ip.split(":")[0], int(ip.split(":")[1]))
         timestamp = time.time_ns() // 1000000
         tags = server.get("tags", [])
-        cached_serverinfo[ip] = ServerInfo(name, ip, map, players, max_players, tags, timestamp)
-
-
-_load_servers()
+        serverinfo[ip] = ServerInfo(name, ip, map, players, max_players, tags, timestamp)
+    return serverinfo
