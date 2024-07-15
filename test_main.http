@@ -1,2 +1,7 @@
-GET http://127.0.0.1:8000/api/v1/playercount/205.178.168.156:27015
+GET http://127.0.0.1:8000/api/v1/servers
+
+
+###
+
+GET http://127.0.0.1:8000/api/v1/playercount/127.0.0.1:27015
 Accept: application/json
